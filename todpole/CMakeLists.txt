@@ -48,15 +48,25 @@ message(STATUS ${Muduo_LIBRARY_DIR})
 include_directories(${Muduo_INCLUDE_DIR})
 find_library(muduo_base muduo_base)
 find_library(muduo_net muduo_net)
+find_library(muduo_http muduo_http)
 message(STATUS ${muduo_base})
 message(STATUS ${muduo_net})
+message(STATUS ${muduo_http})
 
 # find_package(Boost REQUIRED)
 # include_directories(${Boost_INCLUDE_DIRS})
 
 include_directories(..)
 
+# echo
 add_executable(echo src/echo.cc)
 target_link_libraries(echo ${muduo_net})
 target_link_libraries(echo ${muduo_base})
 target_link_libraries(echo pthread rt)
+
+# http
+add_executable(http src/http.cc)
+target_link_libraries(http ${muduo_net})
+target_link_libraries(http ${muduo_base})
+target_link_libraries(http pthread)
+target_link_libraries(http ${muduo_http})

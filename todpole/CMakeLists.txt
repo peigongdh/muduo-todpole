@@ -60,13 +60,25 @@ include_directories(..)
 
 # echo
 add_executable(echo src/echo.cc)
-target_link_libraries(echo ${muduo_net})
-target_link_libraries(echo ${muduo_base})
-target_link_libraries(echo pthread rt)
+target_link_libraries(echo ${muduo_net} ${muduo_base} pthread rt)
 
 # http
 add_executable(http src/http.cc)
-target_link_libraries(http ${muduo_net})
-target_link_libraries(http ${muduo_base})
-target_link_libraries(http pthread)
-target_link_libraries(http ${muduo_http})
+target_link_libraries(http ${muduo_net} ${muduo_base} ${muduo_http} pthread)
+
+# websocket
+set(websocket_SRCS
+        net/websocket/WebSocket.cpp
+        # net/websocket/WebSocketClient.cpp
+        net/websocket/WebSocketServer.cpp
+        )
+add_library(todpole_websocket ${websocket_SRCS})
+target_link_libraries(todpole_websocket ${muduo_net} ${muduo_base} ${muduo_http})
+
+install(TARGETS todpole_websocket DESTINATION lib)
+set(websocket_HEADERS
+        net/websocket/WebSocket.h
+        # net/websocket/WebSocketClient.h
+        net/websocket/WebSocketServer.h
+        )
+install(FILES ${websocket_HEADERS} DESTINATION include/todpole/net/websocket)

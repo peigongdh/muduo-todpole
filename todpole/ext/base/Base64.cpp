@@ -1,4 +1,4 @@
-#include "todpole/utility/Base64.h"
+#include "todpole/ext/base/Base64.h"
 #include <string.h>
 
 namespace muduo {
@@ -11,7 +11,7 @@ namespace muduo {
 
         size_t base64Encode(const char *src, size_t len, char *dst) {
             std::string dest;
-            int size = base64EncodeImpl(src, len, dest);
+            int size = static_cast<int>(base64EncodeImpl(src, len, dest));
             //strncpy(dst, dest.data(), size);
             ::memcpy(dst, dest.data(), size);
             return size;
@@ -40,7 +40,7 @@ namespace muduo {
 
         size_t base64Decode(const char *src, size_t len, char *dst) {
             std::string dest;
-            int size = base64DecodeImpl(src, len, dest);
+            int size = static_cast<int>(base64DecodeImpl(src, len, dest));
             ::memcpy(dst, dest.c_str(), size);
             return size;
         }
@@ -72,7 +72,7 @@ namespace muduo {
 
             unsigned char Tmp[4] = {0};
             int LineLength = 0;
-            for (int i = 0; i < (int) (len / 3); i++) {
+            for (int i = 0; i < static_cast<int>(len / 3); i++) {
                 Tmp[1] = *src++;
                 Tmp[2] = *src++;
                 Tmp[3] = *src++;
@@ -86,7 +86,7 @@ namespace muduo {
                 }
             }
             //��ʣ�����ݽ��б���
-            int Mod = len % 3;
+            int Mod = static_cast<int>(len % 3);
             if (Mod == 1) {
                 Tmp[1] = *src++;
                 dst += EncodeTable[(Tmp[1] & 0xFC) >> 2];
@@ -122,15 +122,15 @@ namespace muduo {
             size_t i = 0;
             while (i < len) {
                 if (*src != '\r' && *src != '\n') {
-                    nValue = DecodeTable[(int) *src++] << 18;
-                    nValue += DecodeTable[(int) *src++] << 12;
-                    dst += (nValue & 0x00FF0000) >> 16;
+                    nValue = DecodeTable[static_cast<int>(*src++)] << 18;
+                    nValue += DecodeTable[static_cast<int>(*src++)] << 12;
+                    dst += static_cast<char>((nValue & 0x00FF0000) >> 16);
                     if (*src != '=') {
-                        nValue += DecodeTable[(int) *src++] << 6;
-                        dst += (nValue & 0x0000FF00) >> 8;
+                        nValue += DecodeTable[static_cast<int>(*src++)] << 6;
+                        dst += static_cast<char>((nValue & 0x0000FF00) >> 8);
                         if (*src != '=') {
-                            nValue += DecodeTable[(int) *src++];
-                            dst += nValue & 0x000000FF;
+                            nValue += DecodeTable[static_cast<int>(*src++)];
+                            dst += static_cast<char>(nValue & 0x000000FF);
                         }
                     }
                     i += 4;

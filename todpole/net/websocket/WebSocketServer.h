@@ -11,14 +11,11 @@
 // #include "zlreactor/Define.h"
 #include "muduo/net/TcpServer.h"
 #include "muduo/net/Callbacks.h"
-#include "todpole/net/http/HttpProtocol.h"
+// #include "todpole/net/http/HttpProtocol.h"
 #include "todpole/net/websocket/WebSocket.h"
 using std::string;
 
-using namespace muduo;
-using namespace muduo::net;
-
-namespace zl
+namespace muduo
 {
 namespace net
 {
@@ -30,7 +27,7 @@ namespace net
 namespace ws
 {
 
-class WsServer : public muduo::net::TcpServer
+class WsServer : public TcpServer
 {
 public:
     typedef std::function<void (const TcpConnectionPtr&)> OnOpenCallback;
@@ -64,8 +61,8 @@ public:
 
 private:
     void onConnection(const TcpConnectionPtr& conn);
-    void onMessage(const TcpConnectionPtr& conn, ByteBuffer *buf, Timestamp receiveTime);
-    void handshake(const TcpConnectionPtr& conn, ByteBuffer *buf, Timestamp receiveTime);
+    void onMessage(const TcpConnectionPtr& conn, Buffer *buf, Timestamp receiveTime);
+    void handshake(const TcpConnectionPtr& conn, Buffer *buf, Timestamp receiveTime);
 
 private:
     WsServer(const WsServer&);
@@ -76,5 +73,5 @@ private:
     OnMessageCallback    onmessage_;
 };
 
-}  }  }  // namespace zl { namespace net { namespace ws {
+}  }  }  // namespace muduo { namespace net { namespace ws {
 #endif  /* ZL_NET_WEBSOCKET_SERVER_H */

@@ -3,7 +3,7 @@
 #include "todpole/utility/Base64.h"
 // #include "muduo/base/Logger.h"
 #include "todpole/base/StringUtil.h"
-namespace zl
+namespace muduo
 {
 namespace net
 {
@@ -48,27 +48,27 @@ namespace ws
         {
             bytes[i] = static_cast<int8_t>(random() % 255);
         }
-        zl::util::base64Encode(reinterpret_cast<char *>(bytes), 16, buffer);
+        muduo::util::base64Encode(reinterpret_cast<char *>(bytes), 16, buffer);
     }
 
     std::string makeHandshakeRequest(const std::string& url)
     {
         std::string buffer;
         buffer.reserve(4096);
-        zl::base::stringFormatAppend(&buffer, "GET /%s HTTP/1.1\r\n", url.c_str());
+        muduo::base::stringFormatAppend(&buffer, "GET /%s HTTP/1.1\r\n", url.c_str());
         //zl::base::stringFormatAppend(&buffer, "Host: %s:%d\r\n", url.c_str());
-        zl::base::stringFormatAppend(&buffer, "Upgrade: websocket\r\n");
-        zl::base::stringFormatAppend(&buffer, "Connection: Upgrade\r\n");
+        muduo::base::stringFormatAppend(&buffer, "Upgrade: websocket\r\n");
+        muduo::base::stringFormatAppend(&buffer, "Connection: Upgrade\r\n");
 
         char hash[45] = {0};
         generateHash(hash, 45);
-        zl::base::stringFormatAppend(&buffer, "Sec-WebSocket-Key: %s\r\n", hash);
-        zl::base::stringFormatAppend(&buffer, "Connection: Upgrade\r\n");
+        muduo::base::stringFormatAppend(&buffer, "Sec-WebSocket-Key: %s\r\n", hash);
+        muduo::base::stringFormatAppend(&buffer, "Connection: Upgrade\r\n");
 
         //zl::base::stringFormatAppend(&buffer, "Sec-WebSocket-Protocol: %s\r\n", "");
-        zl::base::stringFormatAppend(&buffer, "Sec-WebSocket-Version: %d\r\n", 13);  /// 钦定了版本号
+        muduo::base::stringFormatAppend(&buffer, "Sec-WebSocket-Version: %d\r\n", 13);  /// 钦定了版本号
 
-        zl::base::stringFormatAppend(&buffer, "\r\n");
+        muduo::base::stringFormatAppend(&buffer, "\r\n");
         return buffer;
     }
 
@@ -84,11 +84,11 @@ namespace ws
             std::string key(seckey);
             key += "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
             char shakey[20] = {0};
-            zl::util::SHA1 sha1;
+            muduo::util::SHA1 sha1;
             sha1.update(key);
             sha1.final(shakey);
             // LOG_WARN("get SHA1 : %s, %s", key.c_str(), shakey);
-            key = zl::util::base64Encode(shakey, 20);
+            key = muduo::util::base64Encode(shakey, 20);
             // LOG_WARN("get base64 : %s", key.c_str());
             answer += ("Sec-WebSocket-Accept: "+ key + "\r\n");
         }
@@ -209,7 +209,7 @@ namespace ws
         return WS_ERROR_FRAME;
     }
 
-    int encodeFrame(WsFrameType frame_type, const char* msg, int msg_length, char* outbuf, int bufsize)
+    int encodeFrame(WsFrameType frame_type, const char* msg, int msg_length, char* outbuf, size_t bufsize)
     {
         //std::cout << "makeFrame : " <<  frame_type << "\t" << msg << "\t" << msg_length << "\n";
         int pos = 0;
@@ -248,4 +248,4 @@ namespace ws
         return (size+pos);
     }
 
-}  }  }  // namespace zl { namespace net { namespace ws {
+}  }  }  // namespace muduo { namespace net { namespace ws {

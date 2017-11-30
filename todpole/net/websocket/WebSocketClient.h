@@ -13,7 +13,7 @@
 #include "todpole/net/http/HttpProtocol.h"
 #include "todpole/net/websocket/WebSocket.h"
 
-namespace zl
+namespace muduo
 {
 namespace net
 {
@@ -171,5 +171,5 @@ void WsClient::sendData(const TcpConnectionPtr& conn, WsOpcode opcode, uint64_t 
     send(conn, txbuf);
 }
 
-}  }  }  // namespace zl { namespace net { namespace ws {
+}  }  }  // namespace muduo { namespace net { namespace ws {
 #endif  /* ZL_NET_WEBSOCKET_CLIENT_H */

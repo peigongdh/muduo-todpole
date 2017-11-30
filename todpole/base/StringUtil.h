@@ -14,7 +14,7 @@
 #include <sstream>
 #include <algorithm>
 #include <functional>
-namespace zl{
+namespace muduo{
 namespace base{
 
 
@@ -227,5 +227,5 @@ inline typename SequenceSequenceT::value_type
 }
 
 } // namespace base
-} // namespace zl
+} // namespace muduo
 #endif  // ZL_STRING_UTIL_H

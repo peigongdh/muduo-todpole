@@ -1,7 +1,7 @@
 #include "todpole/base/StringUtil.h"
 #include <stdarg.h>
 
-namespace zl
+namespace muduo
 {
 namespace base
 {
@@ -85,4 +85,4 @@ std::string stringFormat(const char *format, ...)
 }
 
 } // namespace base
-} // namespace zl
+} // namespace muduo

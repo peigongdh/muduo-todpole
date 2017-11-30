@@ -7,7 +7,9 @@
 #include "todpole/net/http/HttpContext.h"
 #include "todpole/net/websocket/WebSocket.h"
 
-namespace zl
+#include <iostream>
+
+namespace muduo
 {
 namespace net
 {
@@ -51,18 +53,18 @@ static void printRequestHeaders(const HttpRequest& req)
     std::cout << "---------------print request headers---------------\n";
     std::cout << "Headers " << req.method() << " " << req.path() << std::endl;
 
-    const HttpRequest::HeadersMap &headers = req.headers();
-    for (HttpRequest::HeadersMap::const_iterator it = headers.begin(); it != headers.end(); ++it)
+    const std::map<string, string> &headers = req.headers();
+    for (std::map<string, string>::const_iterator it = headers.begin(); it != headers.end(); ++it)
     {
         std::cout << it->first << ": " << it->second << std::endl;
     }
     std::cout << "---------------------------------------------------\n";
 }
 
-void WsServer::onMessage(const TcpConnectionPtr& conn, ByteBuffer* buf, Timestamp receiveTime)
+void WsServer::onMessage(const TcpConnectionPtr& conn, Buffer* buf, Timestamp receiveTime)
 {
     // LOG_INFO("WsServer::onMessage recv data (%d)(size=%d)", conn->fd(), buf->readableBytes());
-    WsConnection *wsconn = zl::stl::any_cast<WsConnection>(conn->getMutableContext());
+    WsConnection *wsconn = std::any_cast<WsConnection>(conn->getMutableContext());
     assert(wsconn);
     if(!wsconn->handshaked())
     {
@@ -72,7 +74,7 @@ void WsServer::onMessage(const TcpConnectionPtr& conn, ByteBuffer* buf, Timestam
     {
         // LOG_DEBUG("incoming msg: (%d)(%s)", buf->readableBytes(), buf->toString().c_str());
         std::vector<char> outbuf;
-        WsFrameType type = decodeFrame(buf->peek(), buf->readableBytes(), &outbuf);
+        WsFrameType type = decodeFrame(buf->peek(), static_cast<int>(buf->readableBytes()), &outbuf);
         // LOG_DEBUG("getFrame : type=%d, size=%d, data=(%s)", type, outbuf.size(), outbuf.data());
         if(type == WS_INCOMPLETE_TEXT_FRAME || type == WS_INCOMPLETE_BINARY_FRAME)
         {
@@ -95,17 +97,19 @@ void WsServer::onMessage(const TcpConnectionPtr& conn, ByteBuffer* buf, Timestam
     }
 }
 
-void WsServer::handshake(const TcpConnectionPtr& conn, ByteBuffer *buf, Timestamp receiveTime)
+void WsServer::handshake(const TcpConnectionPtr& conn, Buffer *buf, Timestamp receiveTime)
 {
     // LOG_INFO("client[%d] request handshake : \n", conn->fd());
-    const char* over = buf->findDoubleCRLF();
+    // const char* over = buf->findDoubleCRLF();
+    // FIXME: findDoubleCRLF ?
+    const char* over = buf->findCRLF();
     if(!over)   /// 这个地方可能有问题，比如一次性并没有把所有头都发过来。。。
     {
         // LOG_WARN("handshake request data is not ready[%s]", buf->toString().c_str());
         return;
     }
 
-    WsConnection *wsconn = zl::stl::any_cast<WsConnection>(conn->getMutableContext());
+    WsConnection *wsconn = std::any_cast<WsConnection>(conn->getMutableContext());
     assert(wsconn);
     if(wsconn->handshaked())
     {
@@ -113,7 +117,7 @@ void WsServer::handshake(const TcpConnectionPtr& conn, ByteBuffer *buf, Timestam
     }
 
     HttpContext context;
-    if(!context.parseRequest(buf, receiveTime) || context.request().method() != HttpGet)// 解析失败 或者 不是Get请求
+    if(!context.parseRequest(buf, receiveTime) || context.request().method() != HttpRequest::kGet)// 解析失败 或者 不是Get请求
     {
         conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
         conn->shutdown();
@@ -132,7 +136,7 @@ void WsServer::handshake(const TcpConnectionPtr& conn, ByteBuffer *buf, Timestam
     std::string key = req.getHeader(kSecWebSocketKeyHeader);
     std::string answer = makeHandshakeResponse(key.c_str());
     // LOG_WARN("client[%d] response handshake : [%s]\n", conn->fd(), answer.c_str());
-    conn->send(answer.c_str(), answer.size());
+    conn->send(answer.c_str(), static_cast<int>(answer.size()));
 
     onopen_(conn);
 }
@@ -156,7 +160,7 @@ void WsServer::close(const TcpConnectionPtr& conn, WsCloseReason code, const cha
     len += 2;
     if (reason)
     {
-        len += ZL_SNPRINTF(buf + 2, 124, "%s", reason);
+        len += snprintf(buf + 2, 124, "%s", reason);
     }
 
     send(conn, buf, len, WS_CLOSE_FRAME);
@@ -168,7 +172,7 @@ void WsServer::send(const TcpConnectionPtr& conn, const char* data, size_t size,
     if(size < max_send_buf_size)
     {
         char outbuf[max_send_buf_size];
-        int encodesize = encodeFrame(type, data, size, outbuf, max_send_buf_size);
+        int encodesize = encodeFrame(type, data, static_cast<int>(size), outbuf, max_send_buf_size);
         conn->send(outbuf, encodesize);
     }
     else
@@ -176,9 +180,9 @@ void WsServer::send(const TcpConnectionPtr& conn, const char* data, size_t size,
         // LOG_DEBUG("client[%d] data big[%d]", conn->fd(), size);
         std::vector<char> outbuf;
         outbuf.resize(size + 10);
-        int encodesize = encodeFrame(type, data, size, &*outbuf.begin(), outbuf.size());
+        int encodesize = encodeFrame(type, data, static_cast<int>(size), &*outbuf.begin(), outbuf.size());
         conn->send(&*outbuf.begin(), encodesize);
     }
 }
 
-}  }  }  // namespace zl { namespace net { namespace ws {
+}  }  }  // namespace muduo { namespace net { namespace ws {

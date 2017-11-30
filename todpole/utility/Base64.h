@@ -11,7 +11,7 @@
 
 #include <string>
 
-namespace zl {
+namespace muduo {
     namespace util {
 
 // len == strlen(src), and strlen(dst) >= len * 4 / 3

@@ -1,6 +1,6 @@
 #include "todpole/utility/SHA1.h"
 #include <string.h>
-namespace zl
+namespace muduo
 {
     namespace util
     {

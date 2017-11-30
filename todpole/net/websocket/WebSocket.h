@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace zl
+namespace muduo
 {
 namespace net
 {
@@ -181,7 +181,7 @@ namespace ws
     /// msglen     : 发回的数据大小
     /// outbuf     : 编码缓冲区
     /// outsize    : 编码缓冲区大小（建议outsize > insize + 10）
-    int encodeFrame(WsFrameType frame_type, const char* msg, int msgsize, char* outbuf, int outsize);
+    int encodeFrame(WsFrameType frame_type, const char* msg, int msgsize, char* outbuf, size_t outsize);
 
-}  }  }  // namespace zl { namespace net { namespace ws {
+}  }  }  // namespace muduo { namespace net { namespace ws {
 #endif  /* ZL_WEBSOCKET_UTIL_H */

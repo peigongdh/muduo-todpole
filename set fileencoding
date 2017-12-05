@@ -1,97 +1,0 @@
-[1mdiff --git a/todpole/CMakeLists.txt b/todpole/CMakeLists.txt[m
-[1mindex cf6b1a5..90b7b6a 100644[m
-[1m--- a/todpole/CMakeLists.txt[m
-[1m+++ b/todpole/CMakeLists.txt[m
-[36m@@ -10,6 +10,10 @@[m [mif (NOT MUDUO_PATH)[m
-     set(MUDUO_PATH "../build/${CMAKE_BUILD_TYPE}-install-cpp17")[m
- endif ()[m
- [m
-[32m+[m[32m#if (NOT MUDUO_TODPOLE_PATH)[m[41m[m
-[32m+[m[32m#    set(MUDUO_TODPOLE_PATH "../build/${CMAKE_BUILD_TYPE}-install-muduo-todpole")[m[41m[m
-[32m+[m[32m#endif ()[m[41m[m
-[32m+[m[41m[m
- set(CXX_FLAGS[m
-         -g[m
-         # -DVALGRIND[m
-[36m@@ -41,11 +45,22 @@[m [mset(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)[m
- [m
- find_path(Muduo_INCLUDE_DIR muduo "${MUDUO_PATH}/include")[m
- find_path(Muduo_LIBRARY_DIR libmuduo_net.a "${MUDUO_PATH}/lib")[m
-[32m+[m[41m[m
-[32m+[m[32m#find_path(TODPOLE_INCLUDE_DIR muduo "${MUDUO_TODPOLE_PATH}/include")[m[41m[m
-[32m+[m[32m#find_path(TODPOLE_LIBRARY_DIR libmuduo_websocket.a "${MUDUO_TODPOLE_PATH}/lib")[m[41m[m
-[32m+[m[41m[m
-[32m+[m[32m# set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${Muduo_LIBRARY_DIR} ${TODPOLE_LIBRARY_DIR})[m[41m[m
- set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${Muduo_LIBRARY_DIR})[m
-[32m+[m[41m[m
- message(STATUS ${Muduo_INCLUDE_DIR})[m
- message(STATUS ${Muduo_LIBRARY_DIR})[m
- [m
-[32m+[m[32m#message(STATUS ${TODPOLE_INCLUDE_DIR})[m[41m[m
-[32m+[m[32m#message(STATUS ${TODPOLE_LIBRARY_DIR})[m[41m[m
-[32m+[m[41m[m
- include_directories(${Muduo_INCLUDE_DIR})[m
-[32m+[m[32m# include_directories(${TODPOLE_INCLUDE_DIR})[m[41m[m
-[32m+[m[41m[m
- find_library(muduo_base muduo_base)[m
- find_library(muduo_net muduo_net)[m
- find_library(muduo_http muduo_http)[m
-[36m@@ -53,32 +68,34 @@[m [mmessage(STATUS ${muduo_base})[m
- message(STATUS ${muduo_net})[m
- message(STATUS ${muduo_http})[m
- [m
-[31m-# find_package(Boost REQUIRED)[m
-[31m-# include_directories(${Boost_INCLUDE_DIRS})[m
-[31m-[m
- include_directories(..)[m
- [m
-[32m+[m[32m# websocket[m[41m[m
-[32m+[m[32m#set(websocket_SRCS[m[41m[m
-[32m+[m[32m#        net/websocket/WebSocket.cpp[m[41m[m
-[32m+[m[32m#        # net/websocket/WebSocketClient.cpp[m[41m[m
-[32m+[m[32m#        net/websocket/WebSocketServer.cpp[m[41m[m
-[32m+[m[32m#        )[m[41m[m
-[32m+[m[32m#add_library(muduo_websocket ${websocket_SRCS})[m[41m[m
-[32m+[m[32m#target_link_libraries(muduo_websocket ${muduo_net} ${muduo_base} ${muduo_http})[m[41m[m
-[32m+[m[32m#[m[41m[m
-[32m+[m[32m#install(TARGETS muduo_websocket DESTINATION lib)[m[41m[m
-[32m+[m[32m#set(websocket_HEADERS[m[41m[m
-[32m+[m[32m#        net/websocket/WebSocket.h[m[41m[m
-[32m+[m[32m#        # net/websocket/WebSocketClient.h[m[41m[m
-[32m+[m[32m#        net/websocket/WebSocketServer.h[m[41m[m
-[32m+[m[32m#        )[m[41m[m
-[32m+[m[32m#install(FILES ${websocket_HEADERS} DESTINATION include/muduo/net/websocket)[m[41m[m
-[32m+[m[41m[m
- # echo[m
- add_executable(echo src/echo.cc)[m
- target_link_libraries(echo ${muduo_net} ${muduo_base} pthread rt)[m
- [m
-[31m-# http[m
-[31m-add_executable(http src/http.cc)[m
-[31m-target_link_libraries(http ${muduo_net} ${muduo_base} ${muduo_http} pthread)[m
-[32m+[m[32m# simple_http[m[41m[m
-[32m+[m[32madd_executable(simple_http src/simple_http.cc)[m[41m[m
-[32m+[m[32mtarget_link_libraries(simple_http ${muduo_net} ${muduo_base} ${muduo_http} pthread)[m[41m[m
- [m
-[31m-# websocket[m
-[31m-set(websocket_SRCS[m
-[31m-        net/websocket/WebSocket.cpp[m
-[31m-        # net/websocket/WebSocketClient.cpp[m
-[31m-        net/websocket/WebSocketServer.cpp[m
-[31m-        )[m
-[31m-add_library(todpole_websocket ${websocket_SRCS})[m
-[31m-target_link_libraries(todpole_websocket ${muduo_net} ${muduo_base} ${muduo_http})[m
-[31m-[m
-[31m-install(TARGETS todpole_websocket DESTINATION lib)[m
-[31m-set(websocket_HEADERS[m
-[31m-        net/websocket/WebSocket.h[m
-[31m-        # net/websocket/WebSocketClient.h[m
-[31m-        net/websocket/WebSocketServer.h[m
-[31m-        )[m
-[31m-install(FILES ${websocket_HEADERS} DESTINATION include/todpole/net/websocket)[m
-\ No newline at end of file[m
-[32m+[m[32m# test_websocketserver[m[41m[m
-[32m+[m[32m#find_library(muduo_websocket muduo_websocket)[m[41m[m
-[32m+[m[32m#add_executable(test_websocketserver src/test_websocketserver.cc)[m[41m[m
-[32m+[m[32m#target_link_libraries(test_websocketserver ${muduo_net} ${muduo_websocket})[m
-\ No newline at end of file[m

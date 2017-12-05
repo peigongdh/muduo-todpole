@@ -30,6 +30,34 @@ install(FILES ${base_HEADERS} DESTINATION include/muduo/ext/base)
 
 
 
+set(codecs_SRCS
+        net/codecs/LengthHeaderCodec.cpp
+        )
+add_library(muduo_ext_codecs ${codecs_SRCS})
+target_link_libraries(muduo_ext_codecs muduo_net muduo_base)
+install(TARGETS muduo_ext_codecs DESTINATION lib)
+
+set(codecs_HEADERS
+        net/codecs/LengthHeaderCodec.h
+        )
+install(FILES ${codecs_HEADERS} DESTINATION include/muduo/ext/net/codecs)
+
+
+
+set(gateway_SRCS
+        net/gateway/Gateway.cpp
+        )
+add_library(muduo_ext_gateway ${gateway_SRCS})
+target_link_libraries(muduo_ext_gateway muduo_net muduo_base muduo_ext_codecs)
+install(TARGETS muduo_ext_gateway DESTINATION lib)
+
+set(gateway_HEADERS
+        net/gateway/Gateway.h
+        )
+install(FILES ${gateway_HEADERS} DESTINATION include/muduo/ext/net/gateway)
+
+
+
 set(http_SRCS
         net/http/HttpContext.cc
         )
@@ -38,7 +66,7 @@ target_link_libraries(muduo_ext_http muduo_net muduo_base muduo_http)
 install(TARGETS muduo_ext_http DESTINATION lib)
 
 set(http_HEADERS
-        net/http/HttpContext.cc
+        net/http/HttpContext.h
         )
 install(FILES ${http_HEADERS} DESTINATION include/muduo/ext/net/http)
 

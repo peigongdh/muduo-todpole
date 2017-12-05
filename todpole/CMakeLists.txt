@@ -81,3 +81,13 @@ message(STATUS ${muduo_ext_websocket})
 
 add_executable(test_websocketserver src/test_websocketserver.cc)
 target_link_libraries(test_websocketserver ${muduo_net} ${muduo_base} ${muduo_ext_websocket} ${muduo_ext_base} ${muduo_ext_http} pthread)
+
+## test_gateway
+find_library(muduo_ext_gateway muduo_ext_gateway)
+message(STATUS ${muduo_ext_gateway})
+
+find_library(muduo_ext_codecs muduo_ext_codecs)
+message(STATUS ${muduo_ext_codecs})
+
+add_executable(test_gateway src/test_gateway.cc)
+target_link_libraries(test_gateway ${muduo_net} ${muduo_base} ${muduo_ext_gateway} ${muduo_ext_codecs} pthread)

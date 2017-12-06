@@ -45,14 +45,16 @@ install(FILES ${codecs_HEADERS} DESTINATION include/muduo/ext/net/codecs)
 
 
 set(gateway_SRCS
-        net/gateway/Gateway.cpp
+        net/gateway/GatewayServer.cpp
+        net/gateway/GatewayClient.cpp
         )
 add_library(muduo_ext_gateway ${gateway_SRCS})
 target_link_libraries(muduo_ext_gateway muduo_net muduo_base muduo_ext_codecs)
 install(TARGETS muduo_ext_gateway DESTINATION lib)
 
 set(gateway_HEADERS
-        net/gateway/Gateway.h
+        net/gateway/GatewayServer.h
+        net/gateway/GatewayClient.h
         )
 install(FILES ${gateway_HEADERS} DESTINATION include/muduo/ext/net/gateway)
 

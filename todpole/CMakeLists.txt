@@ -89,5 +89,8 @@ message(STATUS ${muduo_ext_gateway})
 find_library(muduo_ext_codecs muduo_ext_codecs)
 message(STATUS ${muduo_ext_codecs})
 
-add_executable(test_gateway src/test_gateway.cc)
-target_link_libraries(test_gateway ${muduo_net} ${muduo_base} ${muduo_ext_gateway} ${muduo_ext_codecs} pthread)
+add_executable(test_gatewayserver src/test_gatewayserver.cc)
+target_link_libraries(test_gatewayserver ${muduo_net} ${muduo_base} ${muduo_ext_gateway} ${muduo_ext_codecs} pthread)
+
+add_executable(test_gatewayclient src/test_gatewayclient.cc)
+target_link_libraries(test_gatewayclient ${muduo_net} ${muduo_base} ${muduo_ext_gateway} ${muduo_ext_codecs} pthread)

@@ -20,6 +20,14 @@ using namespace muduo::net;
 
 class GatewayServer : noncopyable {
 
+//public:
+//    enum HttpRequestParseState {
+//        kExpectRequestLine,
+//        kExpectHeaders,
+//        kExpectBody,
+//        kGotAll,
+//    };
+
 public:
     GatewayServer(EventLoop *loop,
                   const InetAddress &listenAddr)
@@ -38,10 +46,6 @@ public:
     void start() {
         server_.setThreadInitCallback(std::bind(&GatewayServer::threadInit, this, _1));
         server_.start();
-    }
-
-    void sendToAll() {
-
     }
 
 private:
@@ -63,16 +67,7 @@ private:
     void onStringMessage(const TcpConnectionPtr &,
                          const string &message,
                          Timestamp) {
-        EventLoop::Functor f = std::bind(&GatewayServer::distributeMessage, this, message);
-        LOG_DEBUG;
-
-        MutexLockGuard lock(mutex_);
-        for (std::set<EventLoop *>::iterator it = loops_.begin();
-             it != loops_.end();
-             ++it) {
-            (*it)->queueInLoop(f);
-        }
-        LOG_DEBUG;
+        this->sendToAll(message);
     }
 
     void distributeMessage(const string &message) {
@@ -115,7 +110,35 @@ private:
      */
     static unsigned int connectionIdIndex_;
 
+    /**
+     * generate connection id
+     * @return
+     */
     unsigned int generateConnectionId();
+
+public:
+
+    /**
+     * send to all clients
+     * @param message
+     */
+    void sendToAll(const string &message);
+
+    /**
+     * send to clients, use client id
+     * @param message
+     * @param clientIdList
+     * @param excludeClientIdList
+     */
+    void sendToClients(const string &message, const std::vector<unsigned int> &clientIdList,
+                   const std::vector<unsigned int> &excludeClientIdList);
+
+    /**
+     * send to one client
+     * @param clientId
+     * @param message
+     */
+    void sendToClient(unsigned int clientId, const string &message);
 };
 
 #endif //MUDUO_TODPOLE_GATEWAYSERVER_H

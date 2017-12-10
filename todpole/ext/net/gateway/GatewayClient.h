@@ -12,10 +12,12 @@
 
 #include <stdio.h>
 
-#include "todpole/ext/net/codecs/LengthHeaderCodec.h"
+#include "todpole/ext/net/codecs/GatewayCodec.h"
 
 using namespace muduo;
 using namespace muduo::net;
+
+using std::placeholders::_4;
 
 class GatewayClient : noncopyable {
 
@@ -23,11 +25,11 @@ public:
     GatewayClient(EventLoop *loop,
                   const InetAddress &listenAddr)
             : client_(loop, listenAddr, "GatewayClient"),
-              codec_(std::bind(&GatewayClient::onStringMessage, this, _1, _2, _3)) {
+              codec_(std::bind(&GatewayClient::onGatewayMessage, this, _1, _2, _3, _4)) {
         client_.setConnectionCallback(
                 std::bind(&GatewayClient::onConnection, this, _1));
         client_.setMessageCallback(
-                std::bind(&LengthHeaderCodec::onMessage, &codec_, _1, _2, _3));
+                std::bind(&GatewayCodec::onMessage, &codec_, _1, _2, _3));
     }
 
     void connect() {
@@ -41,7 +43,7 @@ public:
     void write(const StringPiece &message) {
         MutexLockGuard lock(mutex_);
         if (connection_) {
-            codec_.send(get_pointer(connection_), message);
+            codec_.send(get_pointer(connection_), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, message);
         }
     }
 
@@ -59,14 +61,15 @@ private:
         }
     }
 
-    void onStringMessage(const TcpConnectionPtr &,
-                         const string &message,
-                         Timestamp) {
-        printf("<<< %s\n", message.c_str());
+    void onGatewayMessage(const TcpConnectionPtr &,
+                          const int32_t cmd,
+                          const string &message,
+                          Timestamp) {
+        printf("<<< %d: %s\n", cmd, message.c_str());
     }
 
     TcpClient client_;
-    LengthHeaderCodec codec_;
+    GatewayCodec codec_;
     MutexLock mutex_;
     TcpConnectionPtr connection_;
 };

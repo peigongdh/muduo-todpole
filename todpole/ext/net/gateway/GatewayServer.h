@@ -13,30 +13,24 @@
 
 #include <set>
 
-#include "todpole/ext/net/codecs/LengthHeaderCodec.h"
+#include "todpole/ext/net/codecs/GatewayCodec.h"
 
 using namespace muduo;
 using namespace muduo::net;
 
-class GatewayServer : noncopyable {
+using std::placeholders::_4;
 
-//public:
-//    enum HttpRequestParseState {
-//        kExpectRequestLine,
-//        kExpectHeaders,
-//        kExpectBody,
-//        kGotAll,
-//    };
+class GatewayServer : noncopyable {
 
 public:
     GatewayServer(EventLoop *loop,
                   const InetAddress &listenAddr)
             : server_(loop, listenAddr, "GatewayServer"),
-              codec_(std::bind(&GatewayServer::onStringMessage, this, _1, _2, _3)) {
+              codec_(std::bind(&GatewayServer::onGatewayMessage, this, _1, _2, _3, _4)) {
         server_.setConnectionCallback(
                 std::bind(&GatewayServer::onConnection, this, _1));
         server_.setMessageCallback(
-                std::bind(&LengthHeaderCodec::onMessage, &codec_, _1, _2, _3));
+                std::bind(&GatewayCodec::onMessage, &codec_, _1, _2, _3));
     }
 
     void setThreadNum(int numThreads) {
@@ -64,20 +58,43 @@ private:
         }
     }
 
-    void onStringMessage(const TcpConnectionPtr &,
-                         const string &message,
-                         Timestamp) {
-        this->sendToAll(message);
+    void onGatewayMessage(const TcpConnectionPtr &,
+                          const int32_t cmd,
+                          const string &message,
+                          Timestamp) {
+        switch (cmd) {
+            case GatewayCodec::GatewayCmd::kGatewayCmdInvalid:
+                // TODO:
+                break;
+            case GatewayCodec::GatewayCmd::kGatewayCmdSendToOne:
+                break;
+            case GatewayCodec::GatewayCmd::kGatewayCmdSendToAll:
+                this->sendToAll(message);
+                break;
+            default:
+                // FIXME:
+                break;
+        }
     }
 
-    void distributeMessage(const string &message) {
-        LOG_DEBUG << "begin";
-        for (ClientConnectionMap::iterator it = LocalConnections::instance().begin();
-             it != LocalConnections::instance().end();
+    void distributeMessageAll(const string &message, const std::set<unsigned int> &excludeClientIdList) {
+        for (ClientConnectionMap::const_iterator it = LocalConnections::instance().cbegin();
+             it != LocalConnections::instance().cend();
              ++it) {
-            codec_.send(get_pointer(it->second), message);
+            if (excludeClientIdList.find(it->first) == excludeClientIdList.cend()) {
+                codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, message);
+            }
         }
-        LOG_DEBUG << "end";
+    }
+
+    void distributeMessagePart(const string &message, const std::set<unsigned int> &includeClientIdList) {
+        for (ClientConnectionMap::const_iterator it = LocalConnections::instance().cbegin();
+             it != LocalConnections::instance().cend();
+             ++it) {
+            if (includeClientIdList.find(it->first) != includeClientIdList.cend()) {
+                codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, message);
+            }
+        }
     }
 
     void threadInit(EventLoop *loop) {
@@ -91,7 +108,7 @@ private:
     TcpServer server_;
 
     MutexLock mutex_;
-    LengthHeaderCodec codec_;
+    GatewayCodec codec_;
     std::set<EventLoop *> loops_;
 
 private:
@@ -125,13 +142,11 @@ public:
     void sendToAll(const string &message);
 
     /**
-     * send to clients, use client id
+     * send to all except clients
      * @param message
-     * @param clientIdList
      * @param excludeClientIdList
      */
-    void sendToClients(const string &message, const std::vector<unsigned int> &clientIdList,
-                   const std::vector<unsigned int> &excludeClientIdList);
+    void sendToAll(const string &message, const std::set<unsigned int> &excludeClientIdList);
 
     /**
      * send to one client
@@ -139,6 +154,13 @@ public:
      * @param message
      */
     void sendToClient(unsigned int clientId, const string &message);
+
+    /**
+     * send to clients
+     * @param message
+     * @param includeClientIdList
+     */
+    void sendToClients(const string &message, const std::set<unsigned int> &includeClientIdList);
 };
 
 #endif //MUDUO_TODPOLE_GATEWAYSERVER_H

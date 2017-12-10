@@ -32,6 +32,7 @@ install(FILES ${base_HEADERS} DESTINATION include/muduo/ext/base)
 
 set(codecs_SRCS
         net/codecs/LengthHeaderCodec.cpp
+        net/codecs/GatewayCodec.cpp
         )
 add_library(muduo_ext_codecs ${codecs_SRCS})
 target_link_libraries(muduo_ext_codecs muduo_net muduo_base)
@@ -39,6 +40,7 @@ install(TARGETS muduo_ext_codecs DESTINATION lib)
 
 set(codecs_HEADERS
         net/codecs/LengthHeaderCodec.h
+        net/codecs/GatewayCodec.h
         )
 install(FILES ${codecs_HEADERS} DESTINATION include/muduo/ext/net/codecs)
 

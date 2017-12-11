@@ -35,7 +35,7 @@ void GatewayServer::sendToAll(const string &message, const std::set<unsigned int
 void GatewayServer::sendToClient(unsigned int clientId, const string &message) {
     ClientConnectionMap::const_iterator it = LocalConnections::instance().find(clientId);
     if (it != LocalConnections::instance().cend()) {
-        codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToOne, message);
+        codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToOne, clientId, message);
     }
 }
 

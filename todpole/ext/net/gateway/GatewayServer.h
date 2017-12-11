@@ -19,6 +19,7 @@ using namespace muduo;
 using namespace muduo::net;
 
 using std::placeholders::_4;
+using std::placeholders::_5;
 
 class GatewayServer : noncopyable {
 
@@ -26,7 +27,7 @@ public:
     GatewayServer(EventLoop *loop,
                   const InetAddress &listenAddr)
             : server_(loop, listenAddr, "GatewayServer"),
-              codec_(std::bind(&GatewayServer::onGatewayMessage, this, _1, _2, _3, _4)) {
+              codec_(std::bind(&GatewayServer::onGatewayMessage, this, _1, _2, _3, _4, _5)) {
         server_.setConnectionCallback(
                 std::bind(&GatewayServer::onConnection, this, _1));
         server_.setMessageCallback(
@@ -60,6 +61,7 @@ private:
 
     void onGatewayMessage(const TcpConnectionPtr &,
                           const int32_t cmd,
+                          const unsigned int ext,
                           const string &message,
                           Timestamp) {
         switch (cmd) {
@@ -67,6 +69,7 @@ private:
                 // TODO:
                 break;
             case GatewayCodec::GatewayCmd::kGatewayCmdSendToOne:
+                this->sendToClient(ext, message);
                 break;
             case GatewayCodec::GatewayCmd::kGatewayCmdSendToAll:
                 this->sendToAll(message);
@@ -82,7 +85,7 @@ private:
              it != LocalConnections::instance().cend();
              ++it) {
             if (excludeClientIdList.find(it->first) == excludeClientIdList.cend()) {
-                codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, message);
+                codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, 0, message);
             }
         }
     }
@@ -92,7 +95,7 @@ private:
              it != LocalConnections::instance().cend();
              ++it) {
             if (includeClientIdList.find(it->first) != includeClientIdList.cend()) {
-                codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, message);
+                codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, 0, message);
             }
         }
     }

@@ -15,8 +15,8 @@ class GatewayCodec : muduo::noncopyable {
 public:
     enum GatewayCmd {
         kGatewayCmdInvalid = 0,
-        kGatewayCmdSendToOne,
-        kGatewayCmdSendToAll,
+        kGatewayCmdSendToOne = 1,
+        kGatewayCmdSendToAll = 2,
     };
 
     struct GatewayHeader {
@@ -75,8 +75,8 @@ public:
 
         GatewayHeader header;
         header.cmd = muduo::net::sockets::hostToNetwork32(cmd);
-        header.length = muduo::net::sockets::hostToNetwork32(len);
         header.ext = muduo::net::sockets::hostToNetwork32(ext);
+        header.length = muduo::net::sockets::hostToNetwork32(len);
 
         buf.prepend(&header, sizeof header);
         conn->send(&buf);

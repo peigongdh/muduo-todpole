@@ -10,7 +10,7 @@
 #include <muduo/base/Mutex.h>
 #include <muduo/net/TcpClient.h>
 
-#include <stdio.h>
+#include <iostream>
 
 #include "todpole/ext/net/codecs/GatewayCodec.h"
 
@@ -44,7 +44,7 @@ public:
     void write(const int32_t cmd, const unsigned ext, const StringPiece &message) {
         MutexLockGuard lock(mutex_);
         if (connection_) {
-            codec_.send(get_pointer(connection_), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, ext, message);
+            codec_.send(get_pointer(connection_), cmd, ext, message);
         }
     }
 
@@ -67,7 +67,7 @@ private:
                           const unsigned int ext,
                           const string &message,
                           Timestamp) {
-        printf("<<< cmd [%d] ext[%d]: %s\n", cmd, ext, message.c_str());
+        std::cout << "<<< " << "cmd [" << cmd << "] ext [" << ext << "]: " << message << std::endl;
     }
 
     TcpClient client_;

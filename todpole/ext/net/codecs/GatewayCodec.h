@@ -20,16 +20,16 @@ public:
     };
 
     struct GatewayHeader {
-        int32_t length;
-        int32_t cmd;
-        unsigned int ext;
+        int16_t length;
+        int16_t cmd;
+        uint32_t ext;
     };
 
 public:
     typedef std::function<void (
     const muduo::net::TcpConnectionPtr&,
     const int32_t cmd,
-    const unsigned int ext,
+    const uint32_t ext,
     const muduo::string &message,
             muduo::Timestamp
     )>
@@ -46,10 +46,10 @@ public:
             // FIXME: use Buffer::peekInt32()
             GatewayHeader header;
             memcpy(&header, buf->peek(), kHeaderLen);
-            header.length = muduo::net::sockets::networkToHost32(header.length);
-            header.cmd = muduo::net::sockets::networkToHost32(header.cmd);
+            header.length = muduo::net::sockets::networkToHost16(header.length);
+            header.cmd = muduo::net::sockets::networkToHost16(header.cmd);
             header.ext = muduo::net::sockets::networkToHost32(header.ext);
-            if (header.length > 65536 || header.length < 0) {
+            if (header.length < 0) {
                 LOG_ERROR << "Invalid length " << header.length;
                 conn->shutdown();  // FIXME: disable reading
                 break;
@@ -67,16 +67,16 @@ public:
     // FIXME: TcpConnectionPtr
     void send(muduo::net::TcpConnection *conn,
               const int32_t cmd,
-              const unsigned int ext,
+              const uint32_t ext,
               const muduo::StringPiece &message) {
         muduo::net::Buffer buf;
         buf.append(message.data(), message.size());
-        int32_t len = static_cast<int32_t>(message.size());
+        int16_t length = static_cast<int16_t>(message.size());
 
         GatewayHeader header;
-        header.cmd = muduo::net::sockets::hostToNetwork32(cmd);
+        header.length = muduo::net::sockets::hostToNetwork16(length);
+        header.cmd = muduo::net::sockets::hostToNetwork16(static_cast<int16_t>(cmd));
         header.ext = muduo::net::sockets::hostToNetwork32(ext);
-        header.length = muduo::net::sockets::hostToNetwork32(len);
 
         buf.prepend(&header, sizeof header);
         conn->send(&buf);

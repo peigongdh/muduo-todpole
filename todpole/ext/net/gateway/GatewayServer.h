@@ -61,7 +61,7 @@ private:
 
     void onGatewayMessage(const TcpConnectionPtr &,
                           const int32_t cmd,
-                          const unsigned int ext,
+                          const uint32_t ext,
                           const string &message,
                           Timestamp) {
         switch (cmd) {
@@ -69,7 +69,7 @@ private:
                 // TODO:
                 break;
             case GatewayCodec::GatewayCmd::kGatewayCmdSendToOne:
-                this->sendToClient(ext, message);
+                this->sendToClient(static_cast<unsigned int>(ext), message);
                 break;
             case GatewayCodec::GatewayCmd::kGatewayCmdSendToAll:
                 this->sendToAll(message);
@@ -97,6 +97,14 @@ private:
             if (includeClientIdList.find(it->first) != includeClientIdList.cend()) {
                 codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, 0, message);
             }
+        }
+    }
+
+    void distributeMessageOne(const string &message, const unsigned int clientId) {
+        ClientConnectionMap::const_iterator it = LocalConnections::instance().find(clientId);
+        if (it != LocalConnections::instance().cend()) {
+            codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToOne,
+                        static_cast<uint32_t>(clientId), message);
         }
     }
 

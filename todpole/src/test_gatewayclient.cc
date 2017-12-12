@@ -23,7 +23,6 @@ int main(int argc, char *argv[]) {
         client.connect();
         std::string line;
 
-
         while (std::getline(std::cin, line)) {
             // FIXME: use split?
             size_t current;
@@ -41,9 +40,9 @@ int main(int argc, char *argv[]) {
 
             current = next + 1;
             next = line.find_first_of(' ', current);
-            unsigned int ext = 0;
+            uint32_t ext = 0;
             if (next != std::string::npos) {
-                ext = static_cast<unsigned int>(std::stoi(line.substr(current, next - current)));
+                ext = static_cast<uint32_t>(std::stoi(line.substr(current, next - current)));
             } else {
                 std::cout << "error format" << std::endl;
                 continue;
@@ -59,9 +58,7 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            std::cout << cmd << ext << message << std::endl;
-
-            client.write(static_cast<int32_t>(2), static_cast<unsigned int>(0), "123");
+            client.write(cmd, ext, message);
         }
         client.disconnect();
         CurrentThread::sleepUsec(1000 * 1000);  // wait for disconnect, see ace/logging/client.cc

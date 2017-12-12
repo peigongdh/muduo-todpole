@@ -32,11 +32,17 @@ void GatewayServer::sendToAll(const string &message, const std::set<unsigned int
     LOG_DEBUG;
 }
 
-void GatewayServer::sendToClient(unsigned int clientId, const string &message) {
-    ClientConnectionMap::const_iterator it = LocalConnections::instance().find(clientId);
-    if (it != LocalConnections::instance().cend()) {
-        codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToOne, clientId, message);
+void GatewayServer::sendToClient(const unsigned int clientId, const string &message) {
+    EventLoop::Functor f = std::bind(&GatewayServer::distributeMessageOne, this, message, clientId);
+    LOG_DEBUG;
+
+    MutexLockGuard lock(mutex_);
+    for (std::set<EventLoop *>::iterator it = loops_.begin();
+         it != loops_.end();
+         ++it) {
+        (*it)->queueInLoop(f);
     }
+    LOG_DEBUG;
 }
 
 void GatewayServer::sendToClients(const string &message, const std::set<unsigned int> &includeClientIdList) {

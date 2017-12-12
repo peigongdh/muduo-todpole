@@ -41,7 +41,7 @@ public:
         client_.disconnect();
     }
 
-    void write(const int32_t cmd, const unsigned ext, const StringPiece &message) {
+    void write(const int32_t cmd, const uint32_t ext, const StringPiece &message) {
         MutexLockGuard lock(mutex_);
         if (connection_) {
             codec_.send(get_pointer(connection_), cmd, ext, message);
@@ -64,7 +64,7 @@ private:
 
     void onGatewayMessage(const TcpConnectionPtr &,
                           const int32_t cmd,
-                          const unsigned int ext,
+                          const uint32_t ext,
                           const string &message,
                           Timestamp) {
         std::cout << "<<< " << "cmd [" << cmd << "] ext [" << ext << "]: " << message << std::endl;

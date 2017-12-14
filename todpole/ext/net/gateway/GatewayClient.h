@@ -10,12 +10,17 @@
 #include <muduo/base/Mutex.h>
 #include <muduo/net/TcpClient.h>
 
-#include <iostream>
+#include "rapidjson/document.h"
 
 #include "todpole/ext/net/codecs/GatewayCodec.h"
 
+#include <iostream>
+#include "stdio.h"
+
 using namespace muduo;
 using namespace muduo::net;
+
+using namespace rapidjson;
 
 using std::placeholders::_4;
 using std::placeholders::_5;
@@ -68,6 +73,14 @@ private:
                           const string &message,
                           Timestamp) {
         std::cout << "<<< " << "cmd [" << cmd << "] ext [" << ext << "]: " << message << std::endl;
+
+        Document document;
+        document.Parse(message.c_str());
+        
+        for (Value::ConstMemberIterator itr = document.MemberBegin();
+             itr != document.MemberEnd(); ++itr) {
+            std::cout << itr->name.GetString() << " : " << itr->value.GetString() << std::endl;
+        }
     }
 
     TcpClient client_;

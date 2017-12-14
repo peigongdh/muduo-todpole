@@ -4,3 +4,6 @@
 [submodule "web-todpole"]
 	path = web-todpole
 	url = git@github.com:peigongdh/web-todpole.git
+[submodule "3rd/rapidjson"]
+	path = 3rd/rapidjson
+	url = git@github.com:Tencent/rapidjson.git

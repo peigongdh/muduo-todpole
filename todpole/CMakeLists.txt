@@ -50,18 +50,19 @@ message(STATUS ${Muduo_LIBRARY_DIR})
 include_directories(${Muduo_INCLUDE_DIR})
 
 find_library(muduo_base muduo_base)
+message(STATUS ${muduo_base})
+
 find_library(muduo_net muduo_net)
+message(STATUS ${muduo_net})
+
 find_library(muduo_http muduo_http)
+message(STATUS ${muduo_http})
 
 find_library(muduo_ext_base muduo_ext_base)
 message(STATUS ${muduo_ext_base})
 
 find_library(muduo_ext_http muduo_ext_http)
 message(STATUS ${muduo_ext_http})
-
-message(STATUS ${muduo_base})
-message(STATUS ${muduo_net})
-message(STATUS ${muduo_http})
 
 include_directories(..)
 

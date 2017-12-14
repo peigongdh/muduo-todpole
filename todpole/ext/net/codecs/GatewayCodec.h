@@ -28,7 +28,7 @@ public:
 public:
     typedef std::function<void (
     const muduo::net::TcpConnectionPtr&,
-    const int32_t cmd,
+    const int16_t cmd,
     const uint32_t ext,
     const muduo::string &message,
             muduo::Timestamp
@@ -66,7 +66,7 @@ public:
 
     // FIXME: TcpConnectionPtr
     void send(muduo::net::TcpConnection *conn,
-              const int32_t cmd,
+              const int16_t cmd,
               const uint32_t ext,
               const muduo::StringPiece &message) {
         muduo::net::Buffer buf;
@@ -75,7 +75,7 @@ public:
 
         GatewayHeader header;
         header.length = muduo::net::sockets::hostToNetwork16(length);
-        header.cmd = muduo::net::sockets::hostToNetwork16(static_cast<int16_t>(cmd));
+        header.cmd = muduo::net::sockets::hostToNetwork16(cmd);
         header.ext = muduo::net::sockets::hostToNetwork32(ext);
 
         buf.prepend(&header, sizeof header);

@@ -30,9 +30,9 @@ int main(int argc, char *argv[]) {
 
             current = next + 1;
             next = line.find_first_of(' ', current);
-            int32_t cmd = 0;
+            int16_t cmd = 0;
             if (next != std::string::npos) {
-                cmd = static_cast<int32_t>(std::stoi(line.substr(current, next - current)));
+                cmd = static_cast<int16_t>(std::stoi(line.substr(current, next - current)));
             } else {
                 std::cout << "error format" << std::endl;
                 continue;

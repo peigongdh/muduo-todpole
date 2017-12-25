@@ -13,13 +13,10 @@
 
 #include <set>
 
-#include "todpole/ext/net/codecs/GatewayCodec.h"
+#include "todpole/ext/net/codecs/WebSocketCodec.h"
 
 using namespace muduo;
 using namespace muduo::net;
-
-using std::placeholders::_4;
-using std::placeholders::_5;
 
 class GatewayServer : noncopyable {
 
@@ -27,11 +24,15 @@ public:
     GatewayServer(EventLoop *loop,
                   const InetAddress &listenAddr)
             : server_(loop, listenAddr, "GatewayServer"),
-              codec_(std::bind(&GatewayServer::onGatewayMessage, this, _1, _2, _3, _4, _5)) {
+              codec_(std::bind(&GatewayServer::onConnection, this, _1),
+                     std::bind(&GatewayServer::onMessage, this, _1, _2, _3),
+                     std::bind(&GatewayServer::onClose, this, _1)) {
         server_.setConnectionCallback(
-                std::bind(&GatewayServer::onConnection, this, _1));
+                std::bind(&WebSocketCodec::onConnection, &codec_, _1));
         server_.setMessageCallback(
-                std::bind(&GatewayCodec::onMessage, &codec_, _1, _2, _3));
+                std::bind(&WebSocketCodec::onMessage, &codec_, _1, _2, _3));
+        server_.setWriteCompleteCallback(
+                std::bind(&WebSocketCodec::onClose, &codec_, _1));
     }
 
     void setThreadNum(int numThreads) {
@@ -59,25 +60,30 @@ private:
         }
     }
 
-    void onGatewayMessage(const TcpConnectionPtr &,
-                          const int16_t cmd,
-                          const uint32_t ext,
-                          const string &message,
-                          Timestamp) {
-        switch (cmd) {
-            case GatewayCodec::GatewayCmd::kGatewayCmdInvalid:
-                // TODO:
-                break;
-            case GatewayCodec::GatewayCmd::kGatewayCmdSendToOne:
-                this->sendToClient(static_cast<unsigned int>(ext), message);
-                break;
-            case GatewayCodec::GatewayCmd::kGatewayCmdSendToAll:
-                this->sendToAll(message);
-                break;
-            default:
-                // FIXME:
-                break;
-        }
+    void onMessage(const TcpConnectionPtr &,
+                   const string &message,
+                   Timestamp) {
+//        switch (cmd) {
+//            case GatewayCodec::GatewayCmd::kGatewayCmdInvalid:
+//                // TODO:
+//                break;
+//            case GatewayCodec::GatewayCmd::kGatewayCmdSendToOne:
+//                this->sendToClient(static_cast<unsigned int>(ext), message);
+//                break;
+//            case GatewayCodec::GatewayCmd::kGatewayCmdSendToAll:
+//                this->sendToAll(message);
+//                break;
+//            default:
+//                // FIXME:
+//                break;
+//        }
+        LOG_INFO << message;
+    }
+
+    void onClose(const TcpConnectionPtr &conn) {
+        LOG_INFO << conn->localAddress().toIpPort() << " -> "
+                 << conn->peerAddress().toIpPort() << " -> "
+                 << "CLOSE";
     }
 
     void distributeMessageAll(const string &message, const std::set<unsigned int> &excludeClientIdList) {
@@ -85,7 +91,7 @@ private:
              it != LocalConnections::instance().cend();
              ++it) {
             if (excludeClientIdList.find(it->first) == excludeClientIdList.cend()) {
-                codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, 0, message);
+                codec_.send(get_pointer(it->second), message);
             }
         }
     }
@@ -95,7 +101,7 @@ private:
              it != LocalConnections::instance().cend();
              ++it) {
             if (includeClientIdList.find(it->first) != includeClientIdList.cend()) {
-                codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToAll, 0, message);
+                codec_.send(get_pointer(it->second), message);
             }
         }
     }
@@ -103,8 +109,9 @@ private:
     void distributeMessageOne(const string &message, const unsigned int clientId) {
         ClientConnectionMap::const_iterator it = LocalConnections::instance().find(clientId);
         if (it != LocalConnections::instance().cend()) {
-            codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToOne,
-                        static_cast<uint32_t>(clientId), message);
+//            codec_.send(get_pointer(it->second), GatewayCodec::GatewayCmd::kGatewayCmdSendToOne,
+//                        static_cast<uint32_t>(clientId), message);
+            codec_.send(get_pointer(it->second), message);
         }
     }
 
@@ -119,7 +126,7 @@ private:
     TcpServer server_;
 
     MutexLock mutex_;
-    GatewayCodec codec_;
+    WebSocketCodec codec_;
     std::set<EventLoop *> loops_;
 
 private:

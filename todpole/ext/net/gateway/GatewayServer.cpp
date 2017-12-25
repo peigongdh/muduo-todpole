@@ -6,6 +6,8 @@
 
 #include <climits>
 
+unsigned int GatewayServer::connectionIdIndex_ = 0;
+
 void GatewayServer::sendToAll(const string &message) {
     EventLoop::Functor f = std::bind(&GatewayServer::distributeMessageAll, this, message, std::set<unsigned int>());
     LOG_DEBUG;
@@ -57,8 +59,6 @@ void GatewayServer::sendToClients(const string &message, const std::set<unsigned
     }
     LOG_DEBUG;
 }
-
-unsigned int GatewayServer::connectionIdIndex_ = 0;
 
 unsigned int GatewayServer::generateConnectionId() {
     MutexLockGuard lock(mutex_);

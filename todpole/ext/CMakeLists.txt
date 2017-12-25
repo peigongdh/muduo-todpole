@@ -30,22 +30,6 @@ install(FILES ${base_HEADERS} DESTINATION include/muduo/ext/base)
 
 
 
-set(codecs_SRCS
-        net/codecs/LengthHeaderCodec.cpp
-        net/codecs/GatewayCodec.cpp
-        )
-add_library(muduo_ext_codecs ${codecs_SRCS})
-target_link_libraries(muduo_ext_codecs muduo_net muduo_base)
-install(TARGETS muduo_ext_codecs DESTINATION lib)
-
-set(codecs_HEADERS
-        net/codecs/LengthHeaderCodec.h
-        net/codecs/GatewayCodec.h
-        )
-install(FILES ${codecs_HEADERS} DESTINATION include/muduo/ext/net/codecs)
-
-
-
 set(gateway_SRCS
         net/gateway/GatewayServer.cpp
         net/gateway/GatewayClient.cpp
@@ -91,3 +75,19 @@ set(websocket_HEADERS
         net/websocket/WebSocketServer.h
         )
 install(FILES ${websocket_HEADERS} DESTINATION include/muduo/ext/net/websocket)
+
+set(codecs_SRCS
+        net/codecs/LengthHeaderCodec.cpp
+        net/codecs/GatewayCodec.cpp
+        net/codecs/WebSocketCodec.cpp
+        )
+add_library(muduo_ext_codecs ${codecs_SRCS})
+target_link_libraries(muduo_ext_codecs muduo_net muduo_base muduo_http muduo_ext_websocket muduo_ext_base muduo_ext_http)
+install(TARGETS muduo_ext_codecs DESTINATION lib)
+
+set(codecs_HEADERS
+        net/codecs/LengthHeaderCodec.h
+        net/codecs/GatewayCodec.h
+        net/codecs/WebSocketCodec.h
+        )
+install(FILES ${codecs_HEADERS} DESTINATION include/muduo/ext/net/codecs)

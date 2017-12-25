@@ -60,7 +60,7 @@ private:
     }
 
     void onGatewayMessage(const TcpConnectionPtr &,
-                          const int32_t cmd,
+                          const int16_t cmd,
                           const uint32_t ext,
                           const string &message,
                           Timestamp) {

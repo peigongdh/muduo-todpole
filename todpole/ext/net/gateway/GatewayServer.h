@@ -17,6 +17,7 @@
 
 using namespace muduo;
 using namespace muduo::net;
+using namespace muduo::net::codecs;
 
 class GatewayServer : noncopyable {
 

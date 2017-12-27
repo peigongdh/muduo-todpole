@@ -1,24 +1,21 @@
 #include "todpole/ext/base/SHA1.h"
 #include <string.h>
-namespace muduo
-{
-    namespace util
-    {
+
+namespace muduo {
+
+    namespace util {
 
         static const int kSHA1DigestSize = 20;
 
-        SHA1::SHA1()
-        {
+        SHA1::SHA1() {
             reset();
         }
 
-        SHA1::~SHA1()
-        {
+        SHA1::~SHA1() {
         }
 
         // SHA1Init - Initialize new context.
-        void SHA1::reset()
-        {
+        void SHA1::reset() {
             // SHA1 initialization constants.
             context_.state[0] = 0x67452301;
             context_.state[1] = 0xEFCDAB89;
@@ -28,43 +25,40 @@ namespace muduo
             context_.count[0] = context_.count[1] = 0;
         }
 
-        #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
-
+#define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
         // blk0() and blk() perform the initial expand.
         // I got the idea of expanding during the round function from SSLeay
-        #define blk0(i) (block->l[i] = (rol(block->l[i], 24) & 0xFF00FF00) | \
+#define blk0(i) (block->l[i] = (rol(block->l[i], 24) & 0xFF00FF00) | \
             (rol(block->l[i], 8) & 0x00FF00FF))
-        #define blk(i) (block->l[i & 15] = rol(block->l[(i + 13) & 15] ^ \
+#define blk(i) (block->l[i & 15] = rol(block->l[(i + 13) & 15] ^ \
             block->l[(i + 8) & 15] ^ block->l[(i + 2) & 15] ^ block->l[i & 15], 1))
 
-                // (R0+R1), R2, R3, R4 are the different operations used in SHA1.
-        #define R0(v, w, x, y, z, i) \
+        // (R0+R1), R2, R3, R4 are the different operations used in SHA1.
+#define R0(v, w, x, y, z, i) \
             z += ((w & (x ^ y)) ^ y) + blk0(i) + 0x5A827999 + rol(v, 5); \
             w = rol(w, 30);
-        #define R1(v, w, x, y, z, i) \
+#define R1(v, w, x, y, z, i) \
             z += ((w & (x ^ y)) ^ y) + blk(i) + 0x5A827999 + rol(v, 5); \
             w = rol(w, 30);
-        #define R2(v, w, x, y, z, i) \
+#define R2(v, w, x, y, z, i) \
             z += (w ^ x ^ y) + blk(i) + 0x6ED9EBA1 + rol(v, 5);\
             w = rol(w, 30);
-        #define R3(v, w, x, y, z, i) \
+#define R3(v, w, x, y, z, i) \
             z += (((w | x) & y) | (w & x)) + blk(i) + 0x8F1BBCDC + rol(v, 5); \
             w = rol(w, 30);
-        #define R4(v, w, x, y, z, i) \
+#define R4(v, w, x, y, z, i) \
             z += (w ^ x ^ y) + blk(i) + 0xCA62C1D6 + rol(v, 5); \
             w = rol(w, 30);
 
         // Hash a single 512-bit block. This is the core of the algorithm.
-        void SHA1::sha1Transform(uint32_t state[5], const uint8_t buffer[64])
-        {
-            union CHAR64LONG16
-            {
+        void SHA1::sha1Transform(uint32_t state[5], const uint8_t buffer[64]) {
+            union CHAR64LONG16 {
                 uint8_t c[64];
                 uint32_t l[16];
             };
 
             // Note(fbarchard): This option does modify the user's data buffer.
-            CHAR64LONG16* block = const_cast<CHAR64LONG16*>(reinterpret_cast<const CHAR64LONG16*>(buffer));
+            CHAR64LONG16 *block = const_cast<CHAR64LONG16 *>(reinterpret_cast<const CHAR64LONG16 *>(buffer));
 
             // Copy context_.state[] to working vars.
             uint32_t a = state[0];
@@ -166,15 +160,13 @@ namespace muduo
             state[4] += e;
         }
 
-        void SHA1::update(const std::string& src)
-        {
-            const uint8_t* buff = reinterpret_cast<const uint8_t*>(src.data());
+        void SHA1::update(const std::string &src) {
+            const uint8_t *buff = reinterpret_cast<const uint8_t *>(src.data());
             update(buff, src.size());
         }
 
         // Run your data through this.
-        void SHA1::update(const uint8_t* data, size_t input_len)
-        {
+        void SHA1::update(const uint8_t *data, size_t input_len) {
             size_t i = 0;
 
             // Compute number of bytes mod 64.
@@ -186,18 +178,15 @@ namespace muduo
             // bit count.
             // Add bit count to low uint32_t
             context_.count[0] += static_cast<uint32_t>(input_len << 3);
-            if (context_.count[0] < static_cast<uint32_t>(input_len << 3))
-            {
+            if (context_.count[0] < static_cast<uint32_t>(input_len << 3)) {
                 ++context_.count[1];  // if overlow (carry), add one to high word
             }
             context_.count[1] += static_cast<uint32_t>(input_len >> 29);
-            if ((index + input_len) > 63)
-            {
+            if ((index + input_len) > 63) {
                 i = 64 - index;
                 memcpy(&context_.buffer[index], data, i);
                 sha1Transform(context_.state, context_.buffer);
-                for (; i + 63 < input_len; i += 64)
-                {
+                for (; i + 63 < input_len; i += 64) {
                     sha1Transform(context_.state, data + i);
                 }
                 index = 0;
@@ -206,18 +195,15 @@ namespace muduo
         }
 
         // Add padding and return the message digest.
-        void SHA1::finalInternal()
-        {
+        void SHA1::finalInternal() {
             uint8_t finalcount[8];
-            for (int i = 0; i < 8; ++i)
-            {
+            for (int i = 0; i < 8; ++i) {
                 // Endian independent
                 finalcount[i] = static_cast<uint8_t>((context_.count[(i >= 4 ? 0 : 1)] >> ((3 - (i & 3)) * 8)) & 255);
             }
-            update(reinterpret_cast<const uint8_t*>("\200"), 1);
-            while ((context_.count[0] & 504) != 448)
-            {
-                update(reinterpret_cast<const uint8_t*>("\0"), 1);
+            update(reinterpret_cast<const uint8_t *>("\200"), 1);
+            while ((context_.count[0] & 504) != 448) {
+                update(reinterpret_cast<const uint8_t *>("\0"), 1);
             }
             // Should cause a SHA1Transform().
             update(finalcount, 8);
@@ -225,27 +211,23 @@ namespace muduo
             memset(finalcount, 0, 8);   // SWR
         }
 
-        void SHA1::final(void* digest)
-        {
-            char* data = static_cast<char*>(digest);
+        void SHA1::final(void *digest) {
+            char *data = static_cast<char *>(digest);
             finalInternal();
-            for (int i = 0; i < kSHA1DigestSize; ++i)
-            {
+            for (int i = 0; i < kSHA1DigestSize; ++i) {
                 data[i] = static_cast<uint8_t>((context_.state[i >> 2] >> ((3 - (i & 3)) * 8)) & 255);
             }
         }
 
 
-        static std::string encodeAsString(const void* data, size_t size, bool uppercase = false)
-        {
-            const char* hex_digits = uppercase ? "0123456789ABCDEF" : "0123456789abcdef";
-            const unsigned char* p = static_cast<const unsigned char*>(data);
+        static std::string encodeAsString(const void *data, size_t size, bool uppercase = false) {
+            const char *hex_digits = uppercase ? "0123456789ABCDEF" : "0123456789abcdef";
+            const unsigned char *p = static_cast<const unsigned char *>(data);
             const unsigned char *first = p;
             const unsigned char *end = p + size;
 
             std::string str;
-            while (first != end)
-            {
+            while (first != end) {
                 unsigned char ch = *first;
                 str.push_back(hex_digits[ch >> 4]);
                 str.push_back(hex_digits[ch & 0x0F]);
@@ -255,15 +237,13 @@ namespace muduo
             return str;
         }
 
-        std::string SHA1::hexFinal()
-        {
+        std::string SHA1::hexFinal() {
             uint8_t digest[20];
             final(&digest);
             return encodeAsString(digest, 20);
         }
 
-        std::string SHA1::hexDigest(const std::string& src)
-        {
+        std::string SHA1::hexDigest(const std::string &src) {
             SHA1 sha1;
             sha1.update(src);
             return sha1.hexFinal();

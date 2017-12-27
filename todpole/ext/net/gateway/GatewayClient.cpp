@@ -3,3 +3,5 @@
 //
 
 #include "todpole/ext/net/gateway/GatewayClient.h"
+
+using namespace muduo::ext;

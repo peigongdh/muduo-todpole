@@ -18,7 +18,7 @@ set(base_SRCS
         base/SHA1.cpp
         )
 add_library(muduo_ext_base ${base_SRCS})
-target_link_libraries(muduo_ext_base)
+# target_link_libraries(muduo_ext_base)
 install(TARGETS muduo_ext_base DESTINATION lib)
 
 set(base_HEADERS
@@ -35,7 +35,7 @@ set(gateway_SRCS
         net/gateway/GatewayClient.cpp
         )
 add_library(muduo_ext_gateway ${gateway_SRCS})
-target_link_libraries(muduo_ext_gateway muduo_net muduo_base muduo_ext_codecs)
+#target_link_libraries(muduo_ext_gateway muduo_net muduo_base muduo_ext_codecs)
 install(TARGETS muduo_ext_gateway DESTINATION lib)
 
 set(gateway_HEADERS
@@ -50,7 +50,7 @@ set(http_SRCS
         net/http/HttpContext.cc
         )
 add_library(muduo_ext_http ${http_SRCS})
-target_link_libraries(muduo_ext_http muduo_net muduo_base muduo_http)
+#target_link_libraries(muduo_ext_http muduo_net muduo_base muduo_http)
 install(TARGETS muduo_ext_http DESTINATION lib)
 
 set(http_HEADERS
@@ -66,7 +66,7 @@ set(HEADERS
         net/websocket/WebSocketServer.cpp
         )
 add_library(muduo_ext_websocket ${HEADERS})
-target_link_libraries(muduo_ext_websocket muduo_net muduo_base muduo_http muduo_ext_base muduo_ext_http)
+#target_link_libraries(muduo_ext_websocket muduo_net muduo_base muduo_http muduo_ext_base muduo_ext_http)
 install(TARGETS muduo_ext_websocket DESTINATION lib)
 
 set(websocket_HEADERS
@@ -84,7 +84,7 @@ set(codecs_SRCS
         net/codecs/WebSocketCodec.cpp
         )
 add_library(muduo_ext_codecs ${codecs_SRCS})
-target_link_libraries(muduo_ext_codecs muduo_net muduo_base muduo_http muduo_ext_websocket muduo_ext_http)
+#target_link_libraries(muduo_ext_codecs muduo_net muduo_base muduo_ext_websocket muduo_ext_http)
 install(TARGETS muduo_ext_codecs DESTINATION lib)
 
 set(codecs_HEADERS

@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
         uint16_t port = static_cast<uint16_t>(atoi(argv[2]));
         InetAddress serverAddr(argv[1], port);
 
-        GatewayClient client(loopThread.startLoop(), serverAddr);
+        muduo::ext::GatewayClient client(loopThread.startLoop(), serverAddr);
         client.connect();
         std::string line;
 

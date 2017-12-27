@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
         EventLoop loop;
         uint16_t port = static_cast<uint16_t>(atoi(argv[1]));
         InetAddress serverAddr(port);
-        GatewayServer gateway(&loop, serverAddr);
+        muduo::ext::GatewayServer gateway(&loop, serverAddr);
         if (argc > 2) {
             gateway.setThreadNum(atoi(argv[2]));
         }

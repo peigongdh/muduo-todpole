@@ -2,8 +2,8 @@
 #include <string.h>
 
 namespace muduo {
-    namespace util {
 
+    namespace util {
 
         static size_t base64EncodeImpl(const char *src, size_t len, std::string &dst);
 
@@ -67,7 +67,6 @@ namespace muduo {
 
 
         static size_t base64EncodeImpl(const char *src, size_t len, std::string &dst) {
-            //������
             static const char EncodeTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
             unsigned char Tmp[4] = {0};
@@ -105,7 +104,6 @@ namespace muduo {
         }
 
         static size_t base64DecodeImpl(const char *src, size_t len, std::string &dst) {
-            //������
             static const char DecodeTable[] =
                     {
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -134,8 +132,7 @@ namespace muduo {
                         }
                     }
                     i += 4;
-                } else   // �س�����,����
-                {
+                } else {
                     src++;
                     i++;
                 }

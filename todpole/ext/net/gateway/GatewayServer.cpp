@@ -6,6 +6,8 @@
 
 #include <climits>
 
+using namespace muduo::ext;
+
 unsigned int GatewayServer::connectionIdIndex_ = 0;
 
 void GatewayServer::sendToAll(const string &message) {

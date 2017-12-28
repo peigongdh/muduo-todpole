@@ -34,12 +34,12 @@ namespace muduo::ext {
         typedef std::function<void (
         const TcpConnectionPtr&
         )>
-        WebSocketCloseCallback;
+        WebSocketWriteCompleteCallback;
 
         explicit WebSocketCodec(const WebSocketConnectionCallback &connectionCb,
                                 const WebSocketMessageCallback &messageCb,
-                                const WebSocketCloseCallback &closeCb)
-                : connectionCallback_(connectionCb), messageCallback_(messageCb), closeCallback_(closeCb) {
+                                const WebSocketWriteCompleteCallback &completeCb)
+                : connectionCallback_(connectionCb), messageCallback_(messageCb), writeCompleteCallback_(completeCb) {
         }
 
         void onConnection(const TcpConnectionPtr &conn) {
@@ -69,16 +69,15 @@ namespace muduo::ext {
                     messageCallback_(conn, message, receiveTime);
                 } else if (type == WS_CLOSE_FRAME) {
                     conn->shutdown();
-                    closeCallback_(conn);
+                    writeCompleteCallback_(conn);
                 } else {
                     // LOG_WARN("No this [%d] opcode handler", type);
                 }
             }
         }
 
-        void onClose(const TcpConnectionPtr &conn) {
-            // FIXME: onClose
-            closeCallback_(conn);
+        void onWriteComplete(const TcpConnectionPtr &conn) {
+            writeCompleteCallback_(conn);
         }
 
         void send(muduo::net::TcpConnection *conn,
@@ -108,7 +107,7 @@ namespace muduo::ext {
 
         WebSocketConnectionCallback connectionCallback_;
         WebSocketMessageCallback messageCallback_;
-        WebSocketCloseCallback closeCallback_;
+        WebSocketWriteCompleteCallback writeCompleteCallback_;
 
         /**
          * handshake use http protocol

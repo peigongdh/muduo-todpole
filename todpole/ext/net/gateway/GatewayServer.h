@@ -10,7 +10,6 @@
 #include <muduo/base/Mutex.h>
 #include <muduo/base/ThreadLocalSingleton.h>
 #include <muduo/net/TcpServer.h>
-
 #include <set>
 
 #include "todpole/ext/net/codecs/WebSocketCodec.h"
@@ -23,18 +22,36 @@ namespace muduo::ext {
     class GatewayServer : noncopyable {
 
     public:
+
+        typedef std::function<void (
+        const TcpConnectionPtr&
+        )>
+        OnConnectionCallback;
+
+        typedef std::function<void (
+        const TcpConnectionPtr&,
+        const muduo::string &message,
+                muduo::Timestamp
+        )>
+        OnMessageCallback;
+
+        typedef std::function<void (
+        const TcpConnectionPtr&
+        )>
+        OnWriteCompleteCallback;
+
         GatewayServer(EventLoop *loop,
                       const InetAddress &listenAddr)
                 : server_(loop, listenAddr, "GatewayServer"),
                   codec_(std::bind(&GatewayServer::onConnection, this, _1),
                          std::bind(&GatewayServer::onMessage, this, _1, _2, _3),
-                         std::bind(&GatewayServer::onClose, this, _1)) {
+                         std::bind(&GatewayServer::onWriteComplete, this, _1)) {
             server_.setConnectionCallback(
                     std::bind(&WebSocketCodec::onConnection, &codec_, _1));
             server_.setMessageCallback(
                     std::bind(&WebSocketCodec::onMessage, &codec_, _1, _2, _3));
             server_.setWriteCompleteCallback(
-                    std::bind(&WebSocketCodec::onClose, &codec_, _1));
+                    std::bind(&WebSocketCodec::onWriteComplete, &codec_, _1));
         }
 
         void setThreadNum(int numThreads) {
@@ -44,6 +61,18 @@ namespace muduo::ext {
         void start() {
             server_.setThreadInitCallback(std::bind(&GatewayServer::threadInit, this, _1));
             server_.start();
+        }
+
+        void setOnConnectionCallback(const OnConnectionCallback &cb) {
+            onConnection_ = cb;
+        }
+
+        void setOnMessageCallback(const OnMessageCallback &cb) {
+            onMessage_ = cb;
+        }
+
+        void setOnWriteCompleteCallback(const OnWriteCompleteCallback &cb) {
+            onWriteComplete_ = cb;
         }
 
     private:
@@ -60,32 +89,26 @@ namespace muduo::ext {
             } else {
                 LocalConnections::instance().erase(id);
             }
+
+            onConnection_(conn);
         }
 
-        void onMessage(const TcpConnectionPtr &,
+        void onMessage(const TcpConnectionPtr &conn,
                        const string &message,
-                       Timestamp) {
-//        switch (cmd) {
-//            case GatewayCodec::GatewayCmd::kGatewayCmdInvalid:
-//                // TODO:
-//                break;
-//            case GatewayCodec::GatewayCmd::kGatewayCmdSendToOne:
-//                this->sendToClient(static_cast<unsigned int>(ext), message);
-//                break;
-//            case GatewayCodec::GatewayCmd::kGatewayCmdSendToAll:
-//                this->sendToAll(message);
-//                break;
-//            default:
-//                // FIXME:
-//                break;
-//        }
-            LOG_INFO << message;
-        }
-
-        void onClose(const TcpConnectionPtr &conn) {
+                       Timestamp timestamp) {
             LOG_INFO << conn->localAddress().toIpPort() << " -> "
                      << conn->peerAddress().toIpPort() << " -> "
-                     << "CLOSE";
+                     << "message" << " -> "
+                     << message;
+
+            onMessage_(conn, message, timestamp);
+        }
+
+        void onWriteComplete(const TcpConnectionPtr &conn) {
+            LOG_INFO << conn->localAddress().toIpPort() << " -> "
+                     << conn->peerAddress().toIpPort() << " -> "
+                     << "COMPLETE";
+            onWriteComplete_(conn);
         }
 
         void distributeMessageAll(const string &message, const std::set<unsigned int> &excludeClientIdList) {
@@ -152,6 +175,13 @@ namespace muduo::ext {
          * @return
          */
         unsigned int generateConnectionId();
+
+        /**
+         * callback for application
+         */
+        OnConnectionCallback onConnection_;
+        OnMessageCallback onMessage_;
+        OnWriteCompleteCallback onWriteComplete_;
 
     public:
 

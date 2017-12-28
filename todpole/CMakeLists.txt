@@ -69,18 +69,18 @@ include_directories(..)
 add_subdirectory(ext)
 
 # echo
-add_executable(echo src/echo.cc)
+add_executable(echo src/test/echo.cc)
 target_link_libraries(echo ${muduo_net} ${muduo_base} pthread rt)
 
 # simple_http
-add_executable(simple_http src/simple_http.cc)
+add_executable(simple_http src/test/simple_http.cc)
 target_link_libraries(simple_http ${muduo_net} ${muduo_base} ${muduo_http} pthread)
 
 # test_websocketserver
 find_library(muduo_ext_websocket muduo_ext_websocket)
 message(STATUS ${muduo_ext_websocket})
 
-add_executable(test_websocketserver src/test_websocketserver.cc)
+add_executable(test_websocketserver src/test/test_websocketserver.cc)
 target_link_libraries(test_websocketserver ${muduo_net} ${muduo_base} ${muduo_ext_websocket} ${muduo_ext_base} ${muduo_ext_http} pthread)
 
 ## test_gateway
@@ -90,8 +90,12 @@ message(STATUS ${muduo_ext_gateway})
 find_library(muduo_ext_codecs muduo_ext_codecs)
 message(STATUS ${muduo_ext_codecs})
 
-add_executable(test_gatewayserver src/test_gatewayserver.cc)
+add_executable(test_gatewayserver src/test/test_gatewayserver.cc)
 target_link_libraries(test_gatewayserver ${muduo_net} ${muduo_base} ${muduo_ext_websocket} ${muduo_ext_base} ${muduo_ext_gateway} ${muduo_ext_codecs} ${muduo_ext_http} pthread)
 
-add_executable(test_gatewayclient src/test_gatewayclient.cc)
+add_executable(test_gatewayclient src/test/test_gatewayclient.cc)
 target_link_libraries(test_gatewayclient ${muduo_net} ${muduo_base} ${muduo_ext_gateway} ${muduo_ext_codecs} pthread)
+
+## test_todpoleserver
+add_executable(test_todpoleserver src/test/test_todpoleserver.cc src/service/TodpoleServer.cpp)
+target_link_libraries(test_todpoleserver ${muduo_net} ${muduo_base} ${muduo_ext_websocket} ${muduo_ext_base} ${muduo_ext_gateway} ${muduo_ext_codecs} ${muduo_ext_http} pthread)

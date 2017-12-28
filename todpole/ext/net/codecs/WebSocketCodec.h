@@ -7,6 +7,7 @@
 
 #include <muduo/net/TcpConnection.h>
 #include <muduo/net/Buffer.h>
+#include <muduo/base/Logging.h>
 
 #include "todpole/ext/net/websocket/WebSocket.h"
 
@@ -48,7 +49,7 @@ namespace muduo::ext {
             } else {
                 // FIXME: onClose
             }
-            // do callback after handshake
+            // should do callback after handshake
             // connectionCallback_(conn);
         }
 
@@ -65,7 +66,10 @@ namespace muduo::ext {
                 } else if (type == WS_TEXT_FRAME || type == WS_BINARY_FRAME) {
                     buf->retrieveAll();
                     // FIXME: not use string
-                    muduo::string message(outBuf.begin(), outBuf.end());
+                    muduo::string message(outBuf.data());
+
+                    LOG_INFO << "message-size1 : " << message.size();
+
                     messageCallback_(conn, message, receiveTime);
                 } else if (type == WS_CLOSE_FRAME) {
                     conn->shutdown();

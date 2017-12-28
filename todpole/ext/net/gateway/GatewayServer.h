@@ -86,8 +86,10 @@ namespace muduo::ext {
 
             if (conn->connected()) {
                 LocalConnections::instance()[id] = conn;
+                LocalClient::instance()[conn] = id;
             } else {
                 LocalConnections::instance().erase(id);
+                LocalClient::instance().erase(conn);
             }
 
             onConnection_(conn);
@@ -156,14 +158,24 @@ namespace muduo::ext {
 
     private:
         /**
-         * keep all client connection
+         * keep all client id -> connection
          */
         typedef std::map<unsigned int, TcpConnectionPtr> ClientConnectionMap;
 
         /**
-         * use thread local singleton
+         * use thread local singleton client id -> connection map
          */
         typedef ThreadLocalSingleton <ClientConnectionMap> LocalConnections;
+
+        /**
+         * keep all connection -> client id
+         */
+        typedef std::map<TcpConnectionPtr, unsigned int> ConnectionClientMap;
+
+        /**
+         * use thread local singleton connection -> client id map
+         */
+        typedef ThreadLocalSingleton <ConnectionClientMap> LocalClient;
 
         /**
          * index for connection id
@@ -199,6 +211,12 @@ namespace muduo::ext {
         void sendToAll(const string &message, const std::set<unsigned int> &excludeClientIdList);
 
         /**
+         * send to all clients except self
+         * @param message
+         */
+        void sendToAllExcludeSelf(const TcpConnectionPtr &conn, const string &message);
+
+        /**
          * send to one client
          * @param clientId
          * @param message
@@ -211,6 +229,13 @@ namespace muduo::ext {
          * @param includeClientIdList
          */
         void sendToClients(const string &message, const std::set<unsigned int> &includeClientIdList);
+
+        /**
+         * conn -> client id
+         * @param conn
+         * @return
+         */
+        unsigned int getClientId(const TcpConnectionPtr &conn);
     };
 }
 

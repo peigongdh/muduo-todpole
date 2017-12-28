@@ -36,6 +36,12 @@ void GatewayServer::sendToAll(const string &message, const std::set<unsigned int
     LOG_DEBUG;
 }
 
+void GatewayServer::sendToAllExcludeSelf(const TcpConnectionPtr &conn, const string &message) {
+    unsigned int selfClientId = getClientId(conn);
+    std::set<unsigned int> excludeClientIdList = {selfClientId};
+    sendToAll(message, excludeClientIdList);
+}
+
 void GatewayServer::sendToClient(const unsigned int clientId, const string &message) {
     EventLoop::Functor f = std::bind(&GatewayServer::distributeMessageOne, this, message, clientId);
     LOG_DEBUG;
@@ -78,4 +84,12 @@ unsigned int GatewayServer::generateConnectionId() {
         }
     }
     return GatewayServer::connectionIdIndex_;
+}
+
+unsigned int GatewayServer::getClientId(const TcpConnectionPtr &conn) {
+    ConnectionClientMap::const_iterator it = LocalClient::instance().find(conn);
+    if (it != LocalClient::instance().cend()) {
+        return it->second;
+    }
+    return 0;
 }

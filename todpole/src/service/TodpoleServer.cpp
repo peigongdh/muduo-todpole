@@ -20,7 +20,7 @@ void TodpoleServer::onMessage(const TcpConnectionPtr &conn,
     string type = document["type"].GetString();
 
     if (type == "shoot") {
-        server_.sendToAll(message);
+        server_.sendToAllExcludeSelf(conn, message);
     } else {
         // TODO
     }
